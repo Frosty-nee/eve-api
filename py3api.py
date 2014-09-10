@@ -175,16 +175,34 @@ def CertificateTree:
 def CharacterAffiliation:
 '''
 def CharacterID(names):
+	#returned rows have attribtes 'name' and 'characterid'
 	data = {'names': names}
 	query = Query('/eve/CharacterID.xml.aspx', data)
 	ids = []
+	#add each row in the rowset as a dict, then return them
 	for name in query.characters.rows:
 		ids.append(name)
 	return (ids)
-def CharacterInfo():
-	pass
-def CharacterName():
-	pass
+
+def CharacterInfo(key_id, key_vcode, charid):
+	#can be called with no API key, limited, or full
+	data = { 'keyID' : key_id, 'vCode' : key_vcode, 'characterID': charid }
+	query = Query('/eve/CharacterInfo.xml.aspx', data)
+	query.corps = []
+	for corp in query.employmentHistory.rows:
+		query.corps.append(corp)
+	return (query)
+
+def CharacterName(ids):
+	#returned rows have attributes 'name' and 'characterid'
+	data = {'ids' : ids}
+	query = Query('/eve/CharacterName.xml.aspx', data)
+	names = []
+	#add each row to the rowset as a dict, then return them
+	for id in query.characters.rows:
+		names.append(id)
+	return(names)
+
 '''
 def ConquerableStationList:
 
