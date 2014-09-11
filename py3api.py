@@ -7,13 +7,40 @@ api_url = 'https://api.eveonline.com'
 # to 'https://api.testeveonline.com'
 '''
 def AccountStatus:
+'''
+def APIKeyInfo(key_id, key_vcode):
+	data = {'keyID': key_id, 'vCode' : key_vcode}
+	query = Query('/account/APIKeyInfo.xml.aspx', data)
+	query.chars = []
+	query.accessmask = query.tree.find('./result/').attrib['accessMask']
+	query.type = query.tree.find('./result/').attrib['type']
+	try:
+		query.expires = datetime.strptime(query.tree.find('./result/').attrib['expires'], '%Y-%m-%d %H:%M:%S')
+	except ValueError:
+		query.expires = ''
+	for char in query.tree.findall('./result/key/rowset/*'):
+		query.chars.append(char.attrib)
+	return(query)
 
-def APIKeyInfo:
 
-def Characters:
+def Characters(key_id, key_vcode):
+	data = {'keyID': key_id, 'vCode': key_vcode}
+	query = Query('/account/Characters.xml.aspx', data)
+	query.chars = []
+	for char in query.characters.rows:
+		query.chars.append(char)
+	return(query)
 
-def AccountBalance:
 
+def AccountBalance(key_id, key_vcode, charid=None):
+	data = {'keyID': key_id, 'vCode': key_vcode, 'characterID': charid}
+	query = Query('/char/AccountBalance.xml.aspx', data)
+	account =  query.tree.find('./result/rowset/')
+	query.accountid = account.attrib['accountID']
+	query.accountkey = account.attrib['accountKey']
+	query.balance = account.attrib['balance']
+	return query
+'''
 def AssetList:
 
 def Blueprints:
@@ -171,9 +198,16 @@ def CorpWalletTransactions:
 def AllianceList:
 
 def CertificateTree:
-
-def CharacterAffiliation:
 '''
+def CharacterAffiliation(charids):
+	#accepts a tuple of charids and returns an array of dicts containing the requested info
+	data = {'ids': charids}
+	query = Query('/eve/CharacterAffiliation.xml.aspx', data)
+	chars = []
+	for c in query.characters.rows:
+		chars.append(c)
+	return(chars)
+
 def CharacterID(names):
 	#returned rows have attribtes 'name' and 'characterid'
 	data = {'names': names}
@@ -184,11 +218,12 @@ def CharacterID(names):
 		ids.append(name)
 	return (ids)
 
-def CharacterInfo(key_id, key_vcode, charid):
+def CharacterInfo(charid, key_id=None, key_vcode=None):
 	#can be called with no API key, limited, or full
 	data = { 'keyID' : key_id, 'vCode' : key_vcode, 'characterID': charid }
 	query = Query('/eve/CharacterInfo.xml.aspx', data)
 	query.corps = []
+	#stick corp history an an array for easier access
 	for corp in query.employmentHistory.rows:
 		query.corps.append(corp)
 	return (query)
@@ -206,12 +241,78 @@ def CharacterName(ids):
 '''
 def ConquerableStationList:
 
-def ErrorList:
+'''
+def EVEFacWarStats():
+	query = Query('/eve/FacWarStats.xml.aspx', "")
+	query.factionlist = []
+	for faction in query.factions.rows:
+		query.factionlist.append(faction)
+	return(query)
 
-def EVEFacWarStats:
+def EVEFacWarTopStats():
+	query = Query('/eve/FacWarTopStats.xml.aspx', "")
+	#this whole thing makes me sad
+	query.playerkillsyesterday = []
+	query.playerkillslastweek = []
+	query.playerkillstotal = []
+	query.playervpyesterday = []
+	query.playervplastweek = []
+	query.playervptotal = []
+	query.corpkillsyesterday = []
+	query.corpkillslastweek = []
+	query.corpkillstotal = []
+	query.corpvpyesterday = []
+	query.corpvplastweek = []
+	query.corpvptotal = []
+	query.factionkillsyesterday = []
+	query.factionkillslastweek = []
+	query.factionkillstotal = []
+	query.factionvpyesterday = []
+	query.factionvplastweek = []
+	query.factionvptotal = []
 
-def EVEFacWarTopStats:
+	for char in query.characters.KillsYesterday.rows:
+		query.playerkillsyesterday.append(char)
+	for char in query.characters.KillsLastWeek.rows:
+		query.playerkillslastweek.append(char)
+	for char in query.characters.KillsTotal.rows:
+		query.playerkillstotal.append(char)
+	for char in query.characters.VictoryPointsYesterday.rows:
+		query.playervpyesterday.append(char)
+	for char in query.characters.VictoryPointsLastWeek.rows:
+		query.playervplastweek.append(char)
+	for char in query.characters.VictoryPointsTotal.rows:
+		query.playervptotal.append(char)
 
+	for char in query.characters.KillsYesterday.rows:
+		query.corpkillsyesterday.append(char)
+	for char in query.characters.KillsLastWeek.rows:
+		query.corpkillslastweek.append(char)
+	for char in query.characters.KillsTotal.rows:
+		query.corpkillstotal.append(char)
+	for char in query.characters.VictoryPointsYesterday.rows:
+		query.corpvpyesterday.append(char)
+	for char in query.characters.VictoryPointsLastWeek.rows:
+		query.corpvplastweek.append(char)
+	for char in query.characters.VictoryPointsTotal.rows:
+		query.corpvptotal.append(char)
+
+
+	for char in query.characters.KillsYesterday.rows:
+		query.factionkillsyesterday.append(char)
+	for char in query.characters.KillsLastWeek.rows:
+		query.factionkillslastweek.append(char)
+	for char in query.characters.KillsTotal.rows:
+		query.factionkillstotal.append(char)
+	for char in query.characters.VictoryPointsYesterday.rows:
+		query.factionvpyesterday.append(char)
+	for char in query.characters.VictoryPointsLastWeek.rows:
+		query.factionvplastweek.append(char)
+	for char in query.characters.VictoryPointsTotal.rows:
+		query.factionvptotal.append(char)
+
+	return(query)
+'''
 def RefTypes:
 
 def SkillTree:
@@ -253,10 +354,17 @@ class Rowset:
 	def __init__(self, rowset):
 		attributes = rowset.attrib
 		self.name= attributes['name']
-		self.key = attributes['key']
+		try:
+			self.key = attributes['key']
+		except KeyError:
+			self.key = None
 		self.rows = []
 		for row in rowset.findall('./row'):
 			self.rows.append(Row(row))
+
+class List:
+	def __init__(self, list):
+		pass
 
 class Row:
 	def __init__(self, row):
